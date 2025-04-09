@@ -11,7 +11,7 @@
 </p>
 
 
-Uma simples ferramenta que permite os usuários realizarem o download de videos e os audios desses videos usando YoutubeDLSharp e FFmpeg.
+Uma simples ferramenta que permite os usuários realizarem o download de videos e os audios desses videos usando YoutubeDLSharp, FFmpeg e FxTwitter.
 
 ## Pré-Requisitos
 
@@ -31,7 +31,7 @@ Antes de rodar a aplicação, você deve:
 
 ## Features
 
-- Download de video e audio usando FFmpeg e YT-DLP
+- Download de video e audio do Youtube e Twitter(Atual X) usando FFmpeg, YT-DLP e FxTwitter
 - Interface User-Friendly
 
 ## Contribuições
