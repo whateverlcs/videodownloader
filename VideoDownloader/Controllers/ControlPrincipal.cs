@@ -37,7 +37,7 @@ namespace VideoDownloader.Controllers
 
                 string pathFileDownloaded = $"{Global.DirectorySaveDownload}twittervid.com_{GenerateRandomCharacters(10)}.mp4";
 
-                using (HttpClient client = new HttpClient())
+                using (HttpClient client = new HttpClient() { Timeout = TimeSpan.FromMinutes(5) })
                 {
                     client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
 
