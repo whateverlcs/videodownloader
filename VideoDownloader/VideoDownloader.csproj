@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="WindowsAPICodePackShell" Version="8.0.6" />
-    <PackageReference Include="YoutubeDLSharp" Version="1.1.1" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json.Linq;
+using System.IO;
 using System.Net.Http;
 using YoutubeDLSharp;
 using YoutubeDLSharp.Options;
@@ -77,6 +78,17 @@ namespace VideoDownloader.Controllers
             }
 
             return new string(result);
+        }
+
+        public void AtualizarCaminhoSalvamento(string path)
+        {
+            string json = File.ReadAllText("appsettings.json");
+
+            var jObject = JObject.Parse(json);
+
+            jObject.SelectToken("Configuration.pathLastSelected")!.Replace(path);
+
+            File.WriteAllText("appsettings.json", jObject.ToString());
         }
     }
 }

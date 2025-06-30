@@ -1,5 +1,7 @@
 ﻿using Caliburn.Micro;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using VideoDownloader.Controllers;
 
@@ -51,7 +53,24 @@ namespace VideoDownloader.ViewModels
             set
             {
                 _txtLinkX = value;
+
+                var listLinks = _txtLinkX.Split('\n', ';', ',').ToList();
+
+                TxtCountDownloads = $"{listLinks.Count} links to download detected";
+
                 NotifyOfPropertyChange(() => TxtLinkX);
+            }
+        }
+
+        private string _txtCountDownloads;
+
+        public string TxtCountDownloads
+        {
+            get { return _txtCountDownloads; }
+            set
+            {
+                _txtCountDownloads = value;
+                NotifyOfPropertyChange(() => TxtCountDownloads);
             }
         }
 
@@ -91,7 +110,7 @@ namespace VideoDownloader.ViewModels
 
         public IndexViewModel()
         {
-            TextLoading = "LOADING";
+            TextLoading = "DOWNLOADING (-/-)";
         }
 
         public void DownloadYoutubeVideoOrAudio()
@@ -102,7 +121,9 @@ namespace VideoDownloader.ViewModels
                 return;
             }
 
-            if (!TxtLinkX.Contains("youtube.com/watch"))
+            var listLinks = TxtLinkX.Split('\n', ';', ',').ToList();
+
+            if (listLinks.Any(x => !x.Contains("youtube.com/watch")))
             {
                 MessageBox.Show("Please insert a valid YouTube video link to download.", "Please enter a valid link", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -111,12 +132,9 @@ namespace VideoDownloader.ViewModels
             if (SelectSaveDirectory())
             {
                 Loading = true;
-                TextLoading = "DOWNLOADING";
+                TextLoading = $"DOWNLOADING (0/{listLinks.Count})";
 
-                Thread thread = new Thread(DownloadYoutubeVideoOrAudioThread);
-                thread.IsBackground = true;
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
+                Task.Run(() => DownloadYoutubeVideoOrAudioThread(listLinks)).ConfigureAwait(false);
             }
         }
 
@@ -128,7 +146,9 @@ namespace VideoDownloader.ViewModels
                 return;
             }
 
-            if (!TxtLinkX.Contains("x.com/"))
+            var listLinks = TxtLinkX.Split('\n', ';', ',').ToList();
+
+            if (listLinks.Any(x => !x.Contains("x.com/")))
             {
                 MessageBox.Show("Please insert a valid X video link to download.", "Please enter a valid link", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -137,42 +157,57 @@ namespace VideoDownloader.ViewModels
             if (SelectSaveDirectory())
             {
                 Loading = true;
-                TextLoading = "DOWNLOADING";
+                TextLoading = $"DOWNLOADING (0/{listLinks.Count})";
 
-                Thread thread = new Thread(DownloadXVideoOrAudioThread);
-                thread.IsBackground = true;
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
+                Task.Run(() => DownloadXVideoOrAudioThread(listLinks)).ConfigureAwait(false);
             }
         }
 
         public bool SelectSaveDirectory()
         {
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.InitialDirectory = @"C:\";
+
+            var path = App.GetSetting("pathLastSelected");
+
+            dialog.InitialDirectory = !string.IsNullOrEmpty(path) ? path : @"C:\";
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 Global.DirectorySaveDownload = dialog.FileName + "\\";
+                cp.AtualizarCaminhoSalvamento(Global.DirectorySaveDownload);
                 return true;
             }
 
             return false;
         }
 
-        public async void DownloadYoutubeVideoOrAudioThread()
+        public async Task DownloadYoutubeVideoOrAudioThread(List<string> listLinks)
         {
             try
             {
-                bool sucess = await cp.DownloadAudioOrVideoFromYoutube(TxtLinkX, RbVideo ? "Video" : "Audio");
+                var listItensNotDownloaded = new List<string>();
 
-                if (sucess)
+                int i = 1;
+
+                foreach (var link in listLinks)
+                {
+                    if (!await cp.DownloadAudioOrVideoFromYoutube(link, RbVideo ? "Video" : "Audio"))
+                    {
+                        listItensNotDownloaded.Add(link);
+                    }
+
+                    TextLoading = $"DOWNLOADING ({i}/{listLinks.Count})";
+                    i++;
+                }
+
+                if (listItensNotDownloaded.Count == 0)
                 {
                     MessageBox.Show("Download Completed.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("An error occurred while downloading the inserted video/audio. Please try again, if the error persists, contact support.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("An error occurred while downloading the inserted video/audio. The links that were not downloaded will be saved in a text file at the save location. Please contact support if the issue continues", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    clog.GenerateLinksNotSucceded(listItensNotDownloaded);
                 }
             }
             catch (Exception e)
@@ -183,26 +218,41 @@ namespace VideoDownloader.ViewModels
             finally
             {
                 Loading = false;
-                TextLoading = "LOADING";
+                TextLoading = "DOWNLOADING (-/-)";
                 TxtLinkX = "";
+                TxtCountDownloads = "0 links to download detected";
                 RbVideo = true;
                 RbAudio = false;
             }
         }
 
-        public void DownloadXVideoOrAudioThread()
+        public async Task DownloadXVideoOrAudioThread(List<string> listLinks)
         {
             try
             {
-                var sucess = cp.DownloadAudioOrVideoFromX(TxtLinkX);
+                var listItensNotDownloaded = new List<string>();
 
-                if (sucess.Result)
+                int i = 1;
+
+                foreach (var link in listLinks)
+                {
+                    if (!await cp.DownloadAudioOrVideoFromX(link))
+                    {
+                        listItensNotDownloaded.Add(link);
+                    }
+
+                    TextLoading = $"DOWNLOADING ({i}/{listLinks.Count})";
+                    i++;
+                }
+
+                if (listItensNotDownloaded.Count == 0)
                 {
                     MessageBox.Show("Download Completed.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("An error occurred while downloading the inserted video/audio. Please try again, if the error persists, contact support.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("An error occurred while downloading the inserted video/audio. The links that were not downloaded will be saved in a text file at the save location. Please contact support if the issue continues", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    clog.GenerateLinksNotSucceded(listItensNotDownloaded);
                 }
             }
             catch (Exception e)
@@ -213,8 +263,9 @@ namespace VideoDownloader.ViewModels
             finally
             {
                 Loading = false;
-                TextLoading = "LOADING";
+                TextLoading = "DOWNLOADING (-/-)";
                 TxtLinkX = "";
+                TxtCountDownloads = "0 links to download detected";
                 RbVideo = true;
                 RbAudio = false;
             }
