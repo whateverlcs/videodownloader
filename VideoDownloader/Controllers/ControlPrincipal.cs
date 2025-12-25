@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using VideoDownloader.Models;
 using YoutubeDLSharp;
 using YoutubeDLSharp.Options;
 
@@ -9,6 +11,8 @@ namespace VideoDownloader.Controllers
     public class ControlPrincipal
     {
         private ControlLogs clog = new ControlLogs();
+
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(3, 3);
 
         public async Task<bool> DownloadAudioOrVideoFromYoutube(string url, string type)
         {
@@ -64,6 +68,87 @@ namespace VideoDownloader.Controllers
                 clog.LogException(e.ToString(), $"DownloadAudioOrVideoFromX(string {url}");
                 return false;
             }
+        }
+
+        public async Task<DownloadResult> DownloadVideoViaFFMPEG(string url)
+        {
+            await _semaphore.WaitAsync();
+
+            try
+            {
+                (string urlLink, string codigo) = ExtractCodeFromUrl(url);
+                string outputPath = $"{Global.DirectorySaveDownload}{codigo}";
+                string ffmpegPath = @"./Utils/ffmpeg.exe";
+
+                string arguments = $"-i \"{urlLink}\" -c copy \"{outputPath}\"";
+
+                using (var process = new Process())
+                using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(60)))
+                {
+                    process.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = ffmpegPath,
+                        Arguments = arguments,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        WorkingDirectory = Directory.GetCurrentDirectory()
+                    };
+
+                    process.Start();
+
+                    var waitTask = process.WaitForExitAsync(cts.Token);
+                    var readErrorTask = process.StandardError.ReadToEndAsync();
+
+                    await Task.WhenAll(waitTask, readErrorTask);
+
+                    bool success = process.ExitCode == 0 && File.Exists(outputPath);
+
+                    if (!success)
+                    {
+                        string error = await readErrorTask;
+
+                        if (File.Exists(outputPath))
+                        {
+                            try { File.Delete(outputPath); } catch { }
+                        }
+                    }
+
+                    return new DownloadResult
+                    {
+                        Success = success,
+                        Link = url,
+                        FilePath = outputPath
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                clog.LogException(ex.ToString(), $"DownloadVideoViaFFMPEG(string {url}");
+
+                return new DownloadResult
+                {
+                    Success = false,
+                    Link = url,
+                    FilePath = string.Empty
+                };
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        private (string, string) ExtractCodeFromUrl(string url)
+        {
+            var splittedUrl = url.Split('"');
+
+            string urlLink = splittedUrl[1];
+            string codigo = splittedUrl[3];
+            codigo = codigo.Substring(codigo.LastIndexOf('\\') + 1);
+
+            return (urlLink, codigo);
         }
 
         public string GenerateRandomCharacters(int length)
