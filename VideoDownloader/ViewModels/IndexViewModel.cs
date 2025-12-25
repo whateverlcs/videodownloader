@@ -342,21 +342,26 @@ namespace VideoDownloader.ViewModels
                 {
                     var completedTask = await Task.WhenAny(downloadTasks.Keys);
 
+                    if (!downloadTasks.TryGetValue(completedTask, out string link))
+                    {
+                        downloadTasks.Remove(completedTask);
+                        continue;
+                    }
+
                     var result = await completedTask;
 
                     downloadTasks.Remove(completedTask);
 
                     completedCount++;
 
-                    TextLoading = $"DOWNLOADING ({completedCount}/{totalCount})";
+                    Application.Current?.Dispatcher?.Invoke(() =>
+                    {
+                        TextLoading = $"DOWNLOADING ({completedCount}/{totalCount})";
+                    });
 
                     if (!result.Success)
                     {
                         listItensNotDownloaded.Add(result.Link);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Download concluído: {result.Link} -> {result.FilePath}");
                     }
 
                     if (completedCount % 10 == 0)
