@@ -23,6 +23,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="10"></RowDefinition>
             <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="50"></RowDefinition>
             <RowDefinition Height="80"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -30,21 +31,22 @@
             <RowDefinition Height="10"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <TextBox x:Name="TxtLinkX" Style="{StaticResource MaterialDesignOutlinedTextBox}" Foreground="White" BorderBrush="White" Width="650" FontSize="16" Grid.Column="1" Grid.ColumnSpan="2" TextAlignment="Left" Grid.Row="1" materialDesign:HintAssist.Hint="Enter the video link to start the download" VerticalAlignment="Top" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" />
-        <RadioButton x:Name="RbVideo" Grid.Column="1" Grid.Row="2" Content="Download Video" FontSize="15" Style="{StaticResource MaterialDesignRadioButton}" Foreground="White" BorderBrush="White"/>
-        <RadioButton x:Name="RbAudio" Grid.Column="2" Grid.Row="2" Content="Download Audio" FontSize="15" Style="{StaticResource MaterialDesignRadioButton}" Foreground="White" BorderBrush="White"/>
-        <TextBlock x:Name="TxtCountDownloads" Text="{Binding TxtCountDownloads, Mode=TwoWay}" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="White" />
-        <Button x:Name="DownloadYoutubeVideoOrAudio" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="3" Content="DOWNLOAD FROM YOUTUBE"  Width="650" Height="70"></Button>
-        <Button x:Name="DownloadXVideoOrAudio" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4" Content="DOWNLOAD FROM X"  Width="650" Height="70" Visibility="{Binding ExibirBotaoDownloadX, Converter={StaticResource VisibilityConverter}}" />
-        <Button x:Name="DownloadFFMPEGVideo" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5" Content="DOWNLOAD VIA FFMPEG" Width="650" Height="70" Margin="0 5 0 0" Visibility="{Binding ExibirBotaoDownloadFFMPEG, Converter={StaticResource VisibilityConverter}}" />
-        <StackPanel Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Grid.RowSpan="8" Orientation="Vertical" VerticalAlignment="Center" Visibility="{Binding Loading, Converter={StaticResource VisibilityConverter}}" Background="{StaticResource MahApps.Brushes.Gray.SemiTransparent}">
+        <TextBox x:Name="TxtLinkMainUrl" Style="{StaticResource MaterialDesignOutlinedTextBox}" Foreground="White" BorderBrush="White" Width="650" FontSize="16" Grid.Column="1" Grid.ColumnSpan="2" TextAlignment="Left" Grid.Row="1" materialDesign:HintAssist.Hint="Enter the page URL where the video is located (only if the download is FFMPEG)" VerticalAlignment="Top" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" />
+        <TextBox x:Name="TxtLinkX" Style="{StaticResource MaterialDesignOutlinedTextBox}" Foreground="White" BorderBrush="White" Width="650" FontSize="16" Grid.Column="1" Grid.ColumnSpan="2" TextAlignment="Left" Grid.Row="2" materialDesign:HintAssist.Hint="Enter the video link to start the download" VerticalAlignment="Top" HorizontalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True" />
+        <RadioButton x:Name="RbVideo" Grid.Column="1" Grid.Row="3" Content="Download Video" FontSize="15" Style="{StaticResource MaterialDesignRadioButton}" Foreground="White" BorderBrush="White"/>
+        <RadioButton x:Name="RbAudio" Grid.Column="2" Grid.Row="3" Content="Download Audio" FontSize="15" Style="{StaticResource MaterialDesignRadioButton}" Foreground="White" BorderBrush="White"/>
+        <TextBlock x:Name="TxtCountDownloads" Text="{Binding TxtCountDownloads, Mode=TwoWay}" Grid.Column="2" Grid.Row="3" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="White" />
+        <Button x:Name="DownloadYoutubeVideoOrAudio" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="4" Content="DOWNLOAD FROM YOUTUBE"  Width="650" Height="70"></Button>
+        <Button x:Name="DownloadXVideoOrAudio" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5" Content="DOWNLOAD FROM X"  Width="650" Height="70" Visibility="{Binding ExibirBotaoDownloadX, Converter={StaticResource VisibilityConverter}}" />
+        <Button x:Name="DownloadFFMPEGVideo" Style="{StaticResource MaterialDesignFlatDarkBgButton}" Background="#e9ecef" Foreground="#343a40" BorderBrush="#343a40" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="6" Content="DOWNLOAD VIA FFMPEG" Width="650" Height="70" Margin="0 5 0 0" Visibility="{Binding ExibirBotaoDownloadFFMPEG, Converter={StaticResource VisibilityConverter}}" />
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Grid.RowSpan="9" Orientation="Vertical" VerticalAlignment="Center" Visibility="{Binding Loading, Converter={StaticResource VisibilityConverter}}" Background="{StaticResource MahApps.Brushes.Gray.SemiTransparent}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="100"></RowDefinition>
-                    <RowDefinition Height="130"></RowDefinition>
                     <RowDefinition Height="120"></RowDefinition>
+                    <RowDefinition Height="150"></RowDefinition>
+                    <RowDefinition Height="140"></RowDefinition>
                 </Grid.RowDefinitions>
-                <materialDesign:Card Grid.Row="0" Grid.RowSpan="3" Width="200" Height="160" Padding="8" Background="GhostWhite" Foreground="{DynamicResource PrimaryHueDarkForegroundBrush}" UniformCornerRadius="2" />
+                <materialDesign:Card Grid.Row="0" Grid.RowSpan="3" Width="220" Height="180" Padding="8" Background="GhostWhite" Foreground="{DynamicResource PrimaryHueDarkForegroundBrush}" UniformCornerRadius="2" />
                 <TextBlock x:Name="TextLoading" Grid.Row="1" Text="DOWNLOADING (-/-)" HorizontalAlignment="Center" />
                 <ProgressBar Grid.Row="1" Width="100" Height="60" Style="{DynamicResource MaterialDesignCircularProgressBar}" IsIndeterminate="True" Value="33"/>
             </Grid>

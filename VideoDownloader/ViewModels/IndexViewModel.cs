@@ -76,6 +76,19 @@ namespace VideoDownloader.ViewModels
             }
         }
 
+        private string _txtLinkMainUrl;
+
+        public string TxtLinkMainUrl
+        {
+            get { return _txtLinkMainUrl; }
+            set
+            {
+                _txtLinkMainUrl = value;
+
+                NotifyOfPropertyChange(() => TxtLinkMainUrl);
+            }
+        }
+
         private string _txtCountDownloads;
 
         public string TxtCountDownloads
@@ -181,6 +194,12 @@ namespace VideoDownloader.ViewModels
 
         public void DownloadFFMPEGVideo()
         {
+            if (string.IsNullOrEmpty(TxtLinkMainUrl))
+            {
+                MessageBox.Show("Please enter the page URL where the video is located to proceed with the download.", "Please enter the page URL", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             if (string.IsNullOrEmpty(TxtLinkX))
             {
                 MessageBox.Show("Please enter a link via FFMPEG to proceed with the download.", "Please enter a link", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -271,6 +290,7 @@ namespace VideoDownloader.ViewModels
                 Loading = false;
                 TextLoading = "DOWNLOADING (-/-)";
                 TxtLinkX = "";
+                TxtLinkMainUrl = "";
                 TxtCountDownloads = "0 links to download detected";
                 RbVideo = true;
                 RbAudio = false;
@@ -316,6 +336,7 @@ namespace VideoDownloader.ViewModels
                 Loading = false;
                 TextLoading = "DOWNLOADING (-/-)";
                 TxtLinkX = "";
+                TxtLinkMainUrl = "";
                 TxtCountDownloads = "0 links to download detected";
                 RbVideo = true;
                 RbAudio = false;
@@ -331,7 +352,7 @@ namespace VideoDownloader.ViewModels
 
                 foreach (var link in listLinks)
                 {
-                    var task = cp.DownloadVideoViaFFMPEG(link);
+                    var task = cp.DownloadVideoViaFFMPEG(link, TxtLinkMainUrl);
                     downloadTasks[task] = link;
                 }
 
@@ -395,6 +416,7 @@ namespace VideoDownloader.ViewModels
                 Loading = false;
                 TextLoading = "DOWNLOADING (-/-)";
                 TxtLinkX = "";
+                TxtLinkMainUrl = "";
                 TxtCountDownloads = "0 links to download detected";
                 RbVideo = true;
                 RbAudio = false;

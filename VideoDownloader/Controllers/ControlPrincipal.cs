@@ -70,7 +70,7 @@ namespace VideoDownloader.Controllers
             }
         }
 
-        public async Task<DownloadResult> DownloadVideoViaFFMPEG(string url)
+        public async Task<DownloadResult> DownloadVideoViaFFMPEG(string url, string pageUrlOrigin)
         {
             await _semaphore.WaitAsync();
 
@@ -80,7 +80,7 @@ namespace VideoDownloader.Controllers
                 string outputPath = $"{Global.DirectorySaveDownload}{codigo}";
                 string ffmpegPath = @"./Utils/ffmpeg.exe";
 
-                string arguments = $"-i \"{urlLink}\" -c copy \"{outputPath}\"";
+                string arguments = $"-headers \"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\" -headers \"Referer: {pageUrlOrigin}\" -i \"{urlLink}\" -c copy \"{outputPath}\"";
 
                 using (var process = new Process())
                 using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(60)))
@@ -125,7 +125,7 @@ namespace VideoDownloader.Controllers
             }
             catch (Exception ex)
             {
-                clog.LogException(ex.ToString(), $"DownloadVideoViaFFMPEG(string {url}");
+                clog.LogException(ex.ToString(), $"DownloadVideoViaFFMPEG(string {url}, string {pageUrlOrigin}");
 
                 return new DownloadResult
                 {
